@@ -116,9 +116,9 @@ def test_wait_for_url_times_out(monkeypatch):
         ig.wait_for_url("https://x/yok.png", timeout_s=0)
 
 
-def test_token_days_left(monkeypatch):
-    use(monkeypatch, [{"access_token": "t2", "expires_in": 864000}])
-    assert ig.token_days_left() == 10
+def test_uses_facebook_graph_host():
+    # yeni Meta uygulamaları: Unified Login + sistem kullanıcısı token'ı -> graph.facebook.com
+    assert ig.BASE.startswith("https://graph.facebook.com/")
 
 
 def test_reply_rejects_non_numeric_id(monkeypatch):
@@ -150,6 +150,13 @@ def test_reply_rejects_links_and_brand_violations(monkeypatch):
     assert f.calls == []
 
 
-def test_token_check_reports_changed_token(monkeypatch):
-    use(monkeypatch, [{"access_token": "t2", "expires_in": 5184000}])
-    assert ig.token_check() == {"days_left": 60, "token_degisti": True}
+def test_token_check_valid(monkeypatch):
+    f = use(monkeypatch, [{"id": "42", "username": "clickbytedev0"}])
+    assert ig.token_check() == {"gecerli": True, "username": "clickbytedev0"}
+    assert f.calls[0][1].endswith("/42") and f.calls[0][2]["fields"] == "username"
+
+
+def test_token_check_invalid(monkeypatch):
+    use(monkeypatch, [{"error": {"message": "Error validating access token"}}])
+    with pytest.raises(ig.IgError):
+        ig.token_check()

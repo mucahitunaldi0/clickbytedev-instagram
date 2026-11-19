@@ -18,7 +18,9 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 
-BASE = "https://graph.instagram.com/v22.0"
+# Yeni Meta uygulamaları "Instagram Login" kullanamıyor; Unified Login + işletme portföyündeki
+# sistem kullanıcısı token'ı (süresiz) ile Facebook Graph üzerinden erişilir.
+BASE = "https://graph.facebook.com/v22.0"
 POLL_S = 10
 POLL_TIMEOUT_S = 600
 
@@ -127,7 +129,7 @@ def _recent_media(limit=10, fields="id,timestamp,caption,media_type,permalink"):
 
 def comments(since_hours: int = 24) -> list:
     since = datetime.now(timezone.utc) - timedelta(hours=since_hours)
-    me = os.environ.get("IG_USERNAME", "clickbytedev")
+    me = os.environ.get("IG_USERNAME", "clickbytedev0")
     out = []
     for m in _recent_media():
         data = api("GET", f"{m['id']}/comments",
@@ -171,20 +173,10 @@ def insights(days: int = 31) -> list:
     return out
 
 
-def _refresh() -> dict:
-    return _request("https://graph.instagram.com/refresh_access_token?" + urllib.parse.urlencode(
-        {"grant_type": "ig_refresh_token", "access_token": _token()}))
-
-
-def token_days_left() -> int:
-    """Token'ı yeniler (süresini uzatır) ve kalan günü döndürür."""
-    return int(_refresh()["expires_in"]) // 86400
-
-
 def token_check() -> dict:
-    """Yeniler; Meta farklı bir token döndürdüyse secret'taki token eskir: token_degisti=True."""
-    r = _refresh()
-    return {"days_left": int(r["expires_in"]) // 86400, "token_degisti": r.get("access_token", _token()) != _token()}
+    """Sistem kullanıcısı token'ı süresizdir; yalnızca geçerli olduğu ve doğru hesaba eriştiği kontrol edilir."""
+    r = api("GET", _uid(), fields="username")
+    return {"gecerli": True, "username": r.get("username")}
 
 
 def _main(argv):
