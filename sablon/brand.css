@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:wght@400;700&family=JetBrains+Mono:wght@400;700&display=block');
+
+:root {
+  --gece: #07090D;
+  --kart: #0D1118;
+  --kagit: #E8ECF3;
+  --sis: #8B94A7;
+  --camgobegi: #4FD8E6;
+  --mavi: #3D7BFF;
+  --cizgi: #232A37;
+  --gradyan: linear-gradient(135deg, #FCD02D, #FBB03B 30%, #FF84FF 62%, #8A4CFF);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { width: 100%; height: 100%; }
+
+body {
+  background: var(--gece);
+  color: var(--kagit);
+  font: 400 34px/1.6 'DM Sans', 'Segoe UI', Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* 36 px mühendislik defteri grid'i, %3 beyaz */
+.zemin {
+  width: 100%; height: 100%;
+  padding: 96px 84px;
+  display: flex; flex-direction: column; gap: 40px;
+  background-color: var(--gece);
+  background-image:
+    linear-gradient(#ffffff08 1px, transparent 1px),
+    linear-gradient(90deg, #ffffff08 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.etiket {
+  font: 400 28px/1.2 'JetBrains Mono', Consolas, monospace;
+  color: var(--camgobegi);
+  text-transform: lowercase;
+}
+
+.baslik {
+  font: 800 88px/1.0 'Bricolage Grotesque', 'Segoe UI', Arial, sans-serif;
+  letter-spacing: -0.02em;
+}
+.baslik em { font-style: normal; color: var(--mavi); }
+
+.altbaslik {
+  font: 700 46px/1.15 'Bricolage Grotesque', 'Segoe UI', Arial, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.govde { color: var(--kagit); }
+.sis { color: var(--sis); }
+
+.kart {
+  background: var(--kart);
+  border: 1px solid var(--cizgi);
+  border-radius: 12px;
+  padding: 40px;
+}
+.kart.one-cikan { background: linear-gradient(160deg, #12204A, var(--kart) 70%); }
+
+.kod {
+  background: var(--kart);
+  border: 1px solid var(--cizgi);
+  border-radius: 12px;
+  padding: 36px 40px;
+  font: 400 30px/1.55 'JetBrains Mono', Consolas, monospace;
+  color: var(--kagit);
+  white-space: pre;
+  overflow: hidden;
+}
+.kod .k { color: var(--mavi); }       /* anahtar kelime */
+.kod .s { color: var(--camgobegi); }  /* string */
+.kod .c { color: var(--sis); }        /* yorum */
+
+.alt {
+  margin-top: auto;
+  display: flex; justify-content: space-between; align-items: center;
+  font: 400 26px/1 'JetBrains Mono', Consolas, monospace;
+  color: var(--sis);
+}
+
+.logo { font: 800 34px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em; color: var(--kagit); }
+.logo b { color: var(--mavi); font-weight: 800; }
+
+.isaret {
+  width: 28px; height: 28px; border-radius: 7px;
+  background: var(--gradyan);
+  display: inline-block;
+}
