@@ -19,7 +19,7 @@
 </div>
 <script>
   // render.py bu iki global'i kullanır: süre (ms) ve başlatıcı
-  window.REEL_SURE_MS = 10000;
+  window.REEL_SURE_MS = 15000; // Reel 15-45 sn olmalı (check.py)
   const satirlar = "ListView.builder(\n  itemCount: urunler.length,\n  itemBuilder: (c, i) =>\n    UrunKarti(urunler[i]),\n)";
   window.oynat = () => {
     const kod = document.getElementById('kod');
@@ -31,7 +31,8 @@
         onUpdate() { kod.innerHTML = satirlar.slice(0, Math.round(this.targets()[0].n)) + '<span class="imlec"></span>'; }
       }, '+=0.3')
       .to('#s', { opacity: 1, y: -10, duration: 0.6 }, '+=0.4')
-      .to({}, { duration: 3 });
+      .to({}, { duration: 8.7 });
+    return tl;
   };
 </script>
 </body>

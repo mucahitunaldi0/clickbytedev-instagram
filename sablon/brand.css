@@ -71,6 +71,7 @@ body {
   color: var(--kagit);
   white-space: pre;
   overflow: hidden;
+  font-variant-ligatures: none; /* kod birebir görünsün: => yerine ⇒ çizilmesin */
 }
 .kod .k { color: var(--mavi); }       /* anahtar kelime */
 .kod .s { color: var(--camgobegi); }  /* string */
