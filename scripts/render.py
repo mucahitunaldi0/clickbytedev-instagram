@@ -18,6 +18,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 FPS = 30
+BRAND_FONTS = {"Bricolage Grotesque", "DM Sans", "JetBrains Mono"}
 SIZES = {"carousel": (1080, 1350), "image": (1080, 1350), "story": (1080, 1920), "reel": (1080, 1920)}
 
 
@@ -30,6 +31,11 @@ def _open(browser, w, h, html: Path):
     page = browser.new_page(viewport={"width": w, "height": h})
     page.goto(html.resolve().as_uri(), wait_until="networkidle")
     page.evaluate("document.fonts.ready.then(() => 1)")  # FontFaceSet'i döndürmek sayfayı çökertiyor
+    # fontlar yalnızca kullanılınca yüklenir; ağ engelliyse sessizce varsayılan fonta düşmesin
+    faces = page.evaluate("[...document.fonts].map(f => [f.family.replace(/\"/g, ''), f.status])")
+    failed = sorted({fam for fam, st in faces if st == "error"})
+    if failed or not BRAND_FONTS & {fam for fam, st in faces if st == "loaded"}:
+        raise RuntimeError(f"marka fontu yüklenmedi: hatalı={failed} ({html.name})")
     return page
 
 

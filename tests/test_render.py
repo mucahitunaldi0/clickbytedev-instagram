@@ -57,3 +57,10 @@ def test_render_reel_mp4(tmp_path):
     assert codecs == {"h264", "aac"}
     assert (v["width"], v["height"]) == (1080, 1920)
     assert 4.5 <= float(info["format"]["duration"]) <= 6
+
+
+def test_render_fails_without_brand_fonts(tmp_path):
+    import pytest
+    d = mk(tmp_path, "story", {"story-1.html": "<html><body><h1>fontsuz</h1></body></html>"})
+    with pytest.raises(RuntimeError, match="font"):
+        render(str(d))

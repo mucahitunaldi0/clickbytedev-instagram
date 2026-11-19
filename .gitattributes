@@ -2,3 +2,4 @@
 *.png binary
 *.mp4 binary
 *.mp3 binary
+gunluk.jsonl merge=union

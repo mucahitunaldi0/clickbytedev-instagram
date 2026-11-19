@@ -95,3 +95,25 @@ def test_dart_error_fails(tmp_path):
     d = post(tmp_path)
     (d / "kod.dart").write_text('void main() { int x = "a"; print(x); }', encoding="utf-8")
     assert any("dart" in s for s in check(str(d)))
+
+
+def _has_flutter():
+    from check import _tool
+    return _tool("flutter") is not None
+
+
+@pytest.mark.skipif(not _has_flutter(), reason="flutter yok (bulutta setup-cloud.sh kurar)")
+def test_flutter_snippet_passes_and_error_fails(tmp_path):
+    d = post(tmp_path)
+    (d / "kod.dart").write_text("import 'package:flutter/widgets.dart';\nconst w = Text('Merhaba');\n", encoding="utf-8")
+    assert check(str(d)) == []
+    (d / "kod.dart").write_text("import 'package:flutter/widgets.dart';\nconst Text w = 3;\n", encoding="utf-8")
+    assert any("flutter" in s for s in check(str(d)))
+
+
+def test_flutter_snippet_without_flutter_fails(tmp_path, monkeypatch):
+    import check as c
+    monkeypatch.setattr(c, "_tool", lambda n: None)
+    d = post(tmp_path)
+    (d / "kod.dart").write_text("import 'package:flutter/widgets.dart';\n", encoding="utf-8")
+    assert any("flutter bulunamadı" in s for s in c.check(str(d)))

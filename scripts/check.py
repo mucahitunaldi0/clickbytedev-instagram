@@ -8,6 +8,7 @@ import re
 import shutil
 import struct
 import subprocess
+import tempfile
 import sys
 from pathlib import Path
 
@@ -64,6 +65,42 @@ def _probe(p: Path) -> dict:
     return json.loads(r.stdout or "{}")
 
 
+def _tool(name: str):
+    """PATH'te ya da setup-cloud.sh'in kurduğu ~/flutter/bin altında."""
+    found = shutil.which(name)
+    if found:
+        return found
+    p = Path.home() / "flutter" / "bin" / name
+    return str(p) if p.exists() else None
+
+
+PUBSPEC = """name: kontrol
+environment:
+  sdk: ^3.0.0
+dependencies:
+  flutter:
+    sdk: flutter
+"""
+
+
+def _flutter_analyze(darts: list) -> list:
+    """Flutter kodu geçici bir Flutter projesinde analiz edilir."""
+    flutter = _tool("flutter")
+    if not flutter:
+        return ["flutter bulunamadı; Flutter kodu kontrol edilemedi"]
+    with tempfile.TemporaryDirectory() as tmp:
+        (Path(tmp) / "pubspec.yaml").write_text(PUBSPEC, encoding="utf-8")
+        (Path(tmp) / "lib").mkdir()
+        for f in darts:
+            shutil.copy(f, Path(tmp) / "lib" / f.name)
+        r = subprocess.run([flutter, "pub", "get"], capture_output=True, text=True, cwd=tmp)
+        if r.returncode == 0:
+            r = subprocess.run([flutter, "analyze", "--no-pub", "lib"], capture_output=True, text=True, cwd=tmp)
+        if r.returncode != 0:
+            return ["flutter analyze hatası: " + (r.stdout + r.stderr).strip()[-400:]]
+    return []
+
+
 def check(content_dir: str) -> list:
     d = Path(content_dir)
     issues = []
@@ -93,8 +130,10 @@ def check(content_dir: str) -> list:
 
     # dart kod parçaları
     darts = sorted(d.glob("*.dart"))
-    if darts:
-        dart = shutil.which("dart")
+    if any("package:flutter" in f.read_text(encoding="utf-8") for f in darts):
+        issues += _flutter_analyze(darts)
+    elif darts:
+        dart = _tool("dart")
         if not dart:
             issues.append("dart bulunamadı; kod kontrol edilemedi")
         else:

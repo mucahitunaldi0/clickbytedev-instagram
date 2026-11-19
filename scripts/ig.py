@@ -4,12 +4,13 @@ Ortam: IG_TOKEN, IG_USER_ID.
 CLI:
   python scripts/ig.py publish <image|carousel|reel|story> <caption_file|-> <url>...
   python scripts/ig.py comments [--hours 24]
-  python scripts/ig.py reply <comment_id> <text>
+  python scripts/ig.py reply <comment_id> <metin_dosyasi>
   python scripts/ig.py insights [--days 31]
   python scripts/ig.py token-check
 """
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -44,9 +45,17 @@ def _request(url, data=None):
             out = json.loads(e.read() or b"{}")
         except Exception:
             raise IgError(f"HTTP {e.code}") from e
+    except (urllib.error.URLError, OSError, ValueError) as e:  # ağ, zaman aşımı, bozuk JSON
+        raise IgError(f"istek başarısız: {e}") from e
     if isinstance(out, dict) and "error" in out:
         raise IgError(out["error"].get("message", str(out["error"])))
     return out
+
+
+def _id(resp: dict) -> str:
+    if not isinstance(resp, dict) or "id" not in resp:
+        raise IgError(f"yanıtta id yok: {str(resp)[:200]}")
+    return resp["id"]
 
 
 def api(method: str, path: str, **params) -> dict:
@@ -97,19 +106,19 @@ def publish(kind: str, media_urls: list, caption: str = "") -> str:
         for u in media_urls:
             k, v = _media_param(u)
             extra = {"media_type": "VIDEO"} if k == "video_url" else {}
-            children.append(api("POST", f"{uid}/media", is_carousel_item="true", **{k: v}, **extra)["id"])
-        cid = api("POST", f"{uid}/media", media_type="CAROUSEL", children=",".join(children), caption=caption)["id"]
+            children.append(_id(api("POST", f"{uid}/media", is_carousel_item="true", **{k: v}, **extra)))
+        cid = _id(api("POST", f"{uid}/media", media_type="CAROUSEL", children=",".join(children), caption=caption))
     elif kind == "reel":
-        cid = api("POST", f"{uid}/media", media_type="REELS", video_url=media_urls[0], caption=caption)["id"]
+        cid = _id(api("POST", f"{uid}/media", media_type="REELS", video_url=media_urls[0], caption=caption))
     elif kind == "story":
         k, v = _media_param(media_urls[0])
-        cid = api("POST", f"{uid}/media", media_type="STORIES", **{k: v})["id"]
+        cid = _id(api("POST", f"{uid}/media", media_type="STORIES", **{k: v}))
     elif kind == "image":
-        cid = api("POST", f"{uid}/media", image_url=media_urls[0], caption=caption)["id"]
+        cid = _id(api("POST", f"{uid}/media", image_url=media_urls[0], caption=caption))
     else:
         raise IgError(f"bilinmeyen tür: {kind}")
     _wait_container(cid)
-    return api("POST", f"{uid}/media_publish", creation_id=cid)["id"]
+    return _id(api("POST", f"{uid}/media_publish", creation_id=cid))
 
 
 def _recent_media(limit=10, fields="id,timestamp,caption,media_type,permalink"):
@@ -137,7 +146,13 @@ def reply(comment_id: str, text: str) -> str:
     # yorum metinleri güvenilmez girdi; id yalnızca rakam olabilir
     if not str(comment_id).isdigit():
         raise IgError(f"geçersiz yorum id: {comment_id!r}")
-    return api("POST", f"{comment_id}/replies", message=text)["id"]
+    from check import _text_rules  # marka kuralları yanıtlara da uygulanır
+    problems = _text_rules("yanıt", text)
+    if re.search(r"https?://|www\.", text, re.I):
+        problems.append("yanıtta link olamaz")
+    if not text.strip() or len(text) > 300 or problems:
+        raise IgError("yanıt reddedildi: " + ("; ".join(problems) or "boş/uzun"))
+    return _id(api("POST", f"{comment_id}/replies", message=text))
 
 
 def insights(days: int = 31) -> list:
@@ -156,11 +171,20 @@ def insights(days: int = 31) -> list:
     return out
 
 
+def _refresh() -> dict:
+    return _request("https://graph.instagram.com/refresh_access_token?" + urllib.parse.urlencode(
+        {"grant_type": "ig_refresh_token", "access_token": _token()}))
+
+
 def token_days_left() -> int:
     """Token'ı yeniler (süresini uzatır) ve kalan günü döndürür."""
-    r = _request("https://graph.instagram.com/refresh_access_token?" + urllib.parse.urlencode(
-        {"grant_type": "ig_refresh_token", "access_token": _token()}))
-    return int(r["expires_in"]) // 86400
+    return int(_refresh()["expires_in"]) // 86400
+
+
+def token_check() -> dict:
+    """Yeniler; Meta farklı bir token döndürdüyse secret'taki token eskir: token_degisti=True."""
+    r = _refresh()
+    return {"days_left": int(r["expires_in"]) // 86400, "token_degisti": r.get("access_token", _token()) != _token()}
 
 
 def _main(argv):
@@ -171,12 +195,12 @@ def _main(argv):
         res = {"media_id": publish(kind, urls, caption)}
     elif cmd == "comments":
         res = comments(int(rest[1]) if rest[:1] == ["--hours"] else 24)
-    elif cmd == "reply":
-        res = {"id": reply(rest[0], rest[1])}
+    elif cmd == "reply":  # metin dosyadan: shell'e yorum kaynaklı metin geçmesin
+        res = {"id": reply(rest[0], open(rest[1], encoding="utf-8").read().strip())}
     elif cmd == "insights":
         res = insights(int(rest[1]) if rest[:1] == ["--days"] else 31)
     elif cmd == "token-check":
-        res = {"days_left": token_days_left()}
+        res = token_check()
     else:
         raise SystemExit(__doc__)
     print(json.dumps(res, ensure_ascii=False, indent=1))

@@ -126,3 +126,30 @@ def test_reply_rejects_non_numeric_id(monkeypatch):
     with pytest.raises(ig.IgError):
         ig.reply("123/../42/media_publish", "x")
     assert f.calls == []
+
+
+def test_network_error_wrapped(monkeypatch):
+    def boom(req, timeout=None):
+        raise ig.urllib.error.URLError("dns")
+    monkeypatch.setattr(ig.urllib.request, "urlopen", boom)
+    with pytest.raises(ig.IgError):
+        ig.api("GET", "me")
+
+
+def test_missing_id_wrapped(monkeypatch):
+    use(monkeypatch, [{"weird": 1}])
+    with pytest.raises(ig.IgError):
+        ig.publish("image", ["https://x/a.png"], "c")
+
+
+def test_reply_rejects_links_and_brand_violations(monkeypatch):
+    f = use(monkeypatch, [])
+    for bad in ["bakın https://evil.example", "www.evil.example", "Harika 🚀🔥", "en iyi yöntem"]:
+        with pytest.raises(ig.IgError):
+            ig.reply("123", bad)
+    assert f.calls == []
+
+
+def test_token_check_reports_changed_token(monkeypatch):
+    use(monkeypatch, [{"access_token": "t2", "expires_in": 5184000}])
+    assert ig.token_check() == {"days_left": 60, "token_degisti": True}

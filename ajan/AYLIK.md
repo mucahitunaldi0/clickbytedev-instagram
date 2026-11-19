@@ -18,7 +18,8 @@ Sen @clickbytedev Instagram hesabını tam otomatik yöneten ajansın. Kimse ona
    - carousel: `slide-1.html` … `slide-N.html` (5-8 slayt; 1. kapak, son slayt çağrı) → `medya: ["out/slide-1.png", ...]`
    - story: `story-1.html` … (3-5 kare) → `medya: ["out/story-1.png", ...]`, `caption: ""`
    - reel: `reel.html` (`sablon/ornek-reel.html` sözleşmesi: `window.REEL_SURE_MS` 15000-45000, `window.oynat()` GSAP timeline'ı **döndürür**, yalnızca GSAP animasyonu) → `medya: ["out/reel.mp4"]`, `muzik: "muzik/sakin-1.m4a"` veya `"muzik/ritim-1.m4a"`
-   - Kod gösteriyorsan aynı kodu `kod.dart` olarak da koy (derlenebilir, `void main() {}` içerebilir); `check.py` `dart analyze` çalıştırır.
+   - Kod gösteriyorsan aynı kodu `kod.dart` olarak da koy; derlenebilir olmalı. Flutter kodu `import 'package:flutter/material.dart';` ile başlar ve geçici bir Flutter projesinde `flutter analyze` ile kontrol edilir; saf Dart kodu `dart analyze` ile kontrol edilir. Görseldeki kod ile `kod.dart` aynı olmalı (import satırları hariç).
+   - Yayın saati geçmiş içerik üretme: `run.py` 3 saatten eski içeriği `gecikti` diye atlar.
    - Sonra: `python scripts/render.py icerik/<id>` → `python scripts/check.py icerik/<id>`.
    - Check geçmezse sorunu düzelt, tekrar render+check. İkinci kez geçmezse klasörü sil, yerine yedek konu üret ve rapora yaz.
    - Render çıktısından en az bir PNG'yi/kareyi görsel olarak kontrol et (taşan yazı, boş alan, okunmayan kod).
