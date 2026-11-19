@@ -1,6 +1,6 @@
 """Instagram Graph API (Instagram Login) istemcisi. Yalnızca resmi API; standart kütüphane.
 
-Ortam: IG_TOKEN, IG_USER_ID.
+Ortam: IG_USER_ID; IG_TOKEN (yoksa Authorization başlığını bulut proxy'si ekler).
 CLI:
   python scripts/ig.py publish <image|carousel|reel|story> <caption_file|-> <url>...
   python scripts/ig.py comments [--hours 24]
@@ -29,16 +29,18 @@ class IgError(Exception):
     pass
 
 
-def _token():
-    return os.environ["IG_TOKEN"]
+def _auth() -> dict:
+    # IG_TOKEN yoksa (bulut ortamı) Authorization başlığını ağ gizli anahtarı proxy'si ekler
+    t = os.environ.get("IG_TOKEN")
+    return {"Authorization": f"Bearer {t}"} if t else {}
 
 
 def _uid():
     return os.environ["IG_USER_ID"]
 
 
-def _request(url, data=None):
-    req = urllib.request.Request(url, data=data, method="POST" if data is not None else "GET")
+def _request(url, data=None, headers=None):
+    req = urllib.request.Request(url, data=data, headers=headers or {}, method="POST" if data is not None else "GET")
     try:
         with urllib.request.urlopen(req, timeout=60) as r:
             out = json.loads(r.read() or b"{}")
@@ -61,12 +63,11 @@ def _id(resp: dict) -> str:
 
 
 def api(method: str, path: str, **params) -> dict:
-    params["access_token"] = _token()
     q = urllib.parse.urlencode(params)
     url = f"{BASE}/{path.lstrip('/')}"
     if method == "GET":
-        return _request(f"{url}?{q}")
-    return _request(url, data=q.encode())
+        return _request(f"{url}?{q}", headers=_auth())
+    return _request(url, data=q.encode(), headers=_auth())
 
 
 def wait_for_url(url: str, timeout_s: int = 600) -> None:

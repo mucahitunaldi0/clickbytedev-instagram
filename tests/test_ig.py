@@ -160,3 +160,19 @@ def test_token_check_invalid(monkeypatch):
     use(monkeypatch, [{"error": {"message": "Error validating access token"}}])
     with pytest.raises(ig.IgError):
         ig.token_check()
+
+
+def test_token_in_header_not_url(monkeypatch):
+    seen = []
+    monkeypatch.setattr(ig.urllib.request, "urlopen", lambda req, timeout=None: seen.append(req) or FakeResp({"id": "1"}))
+    ig.api("GET", "42", fields="username")
+    assert seen[0].get_header("Authorization") == "Bearer t"
+    assert "access_token" not in seen[0].full_url
+
+
+def test_no_token_env_leaves_auth_to_proxy(monkeypatch):
+    monkeypatch.delenv("IG_TOKEN")
+    seen = []
+    monkeypatch.setattr(ig.urllib.request, "urlopen", lambda req, timeout=None: seen.append(req) or FakeResp({"id": "1"}))
+    ig.api("GET", "42", fields="username")
+    assert seen[0].get_header("Authorization") is None
