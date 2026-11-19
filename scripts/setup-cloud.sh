@@ -3,7 +3,7 @@
 # Kurulu olanları atlar; her koşuda güvenle çalıştırılabilir.
 # Gerekli ağ erişimi: pypi.org, playwright.azureedge.net, apt depoları, github.com (flutter),
 # storage.googleapis.com + pub.dev (flutter paketleri), cdnjs.cloudflare.com (GSAP),
-# fonts.googleapis.com + fonts.gstatic.com, graph.facebook.com, <kullanici>.github.io.
+# fonts.googleapis.com + fonts.gstatic.com, graph.facebook.com, mucahitunaldi0.github.io.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 SUDO=""; command -v sudo >/dev/null && [ "$(id -u)" != 0 ] && SUDO="sudo"
