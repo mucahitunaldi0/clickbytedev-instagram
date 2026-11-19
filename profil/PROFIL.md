@@ -4,7 +4,7 @@
 
 **Ad alanı** (aramada çıkar, ≤30 karakter):
 ```
-ClickByteDev | Flutter ipuçları
+ClickByteDev | Flutter ipucu
 ```
 
 **Bio** (≤150 karakter):
