@@ -119,3 +119,10 @@ def test_wait_for_url_times_out(monkeypatch):
 def test_token_days_left(monkeypatch):
     use(monkeypatch, [{"access_token": "t2", "expires_in": 864000}])
     assert ig.token_days_left() == 10
+
+
+def test_reply_rejects_non_numeric_id(monkeypatch):
+    f = use(monkeypatch, [])
+    with pytest.raises(ig.IgError):
+        ig.reply("123/../42/media_publish", "x")
+    assert f.calls == []

@@ -52,7 +52,7 @@ def _request(url, data=None):
 def api(method: str, path: str, **params) -> dict:
     params["access_token"] = _token()
     q = urllib.parse.urlencode(params)
-    url = path if path.startswith("http") else f"{BASE}/{path.lstrip('/')}"
+    url = f"{BASE}/{path.lstrip('/')}"
     if method == "GET":
         return _request(f"{url}?{q}")
     return _request(url, data=q.encode())
@@ -134,6 +134,9 @@ def comments(since_hours: int = 24) -> list:
 
 
 def reply(comment_id: str, text: str) -> str:
+    # yorum metinleri güvenilmez girdi; id yalnızca rakam olabilir
+    if not str(comment_id).isdigit():
+        raise IgError(f"geçersiz yorum id: {comment_id!r}")
     return api("POST", f"{comment_id}/replies", message=text)["id"]
 
 
