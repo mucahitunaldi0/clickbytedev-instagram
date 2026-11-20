@@ -1,0 +1,16 @@
+{
+ "id": "2026-11-23-carousel-expanded-tasan-satir",
+ "kind": "carousel",
+ "yayin": "2026-11-23T12:00:00+03:00",
+ "caption": "Sarı-siyah taşma şeridi mi görüyorsunuz? Çözümü tek widget.\n\nRow içindeki uzun metin ekrandan taşar. Text'i Expanded ile sarın, kalan alanı o kullanır.\n\nİşinize yararsa kaydedin.\n\n#flutter #dart #yazılım",
+ "medya": [
+  "out/slide-1.jpg",
+  "out/slide-2.jpg",
+  "out/slide-3.jpg",
+  "out/slide-4.jpg",
+  "out/slide-5.jpg"
+ ],
+ "muzik": null,
+ "sutun": "ipucu",
+ "uygulama": null
+}

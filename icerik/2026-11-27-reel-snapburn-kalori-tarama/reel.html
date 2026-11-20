@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../sablon/brand.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  .zemin { padding: 260px 84px 300px; justify-content: center; }
+  .imlec { display: inline-block; width: 16px; height: 34px; background: var(--mavi); vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="zemin">
+  <div class="etiket" id="e">// snapburn · nasıl çalışır</div>
+  <h1 class="baslik" id="b">Kalori için <em>3 dokunuş</em></h1>
+  <div class="kart one-cikan govde" id="k1" style="opacity:0">1. Kamerayı açın</div>
+  <div class="kart one-cikan govde" id="k2" style="opacity:0">2. Tabağı çekin</div>
+  <div class="kart one-cikan govde" id="k3" style="opacity:0">3. Sonucu görün</div>
+  <h2 class="altbaslik" id="s" style="opacity:0">Google Play'de <em style="font-style:normal;color:var(--mavi)">ücretsiz</em>. Profildeki linkten.</h2>
+  <div class="alt"><span class="logo">click<b>byte</b>dev</span><span>clickbytedev.com</span></div>
+</div>
+<script>
+  window.REEL_SURE_MS = 15000;
+  window.oynat = () => {
+    const tl = gsap.timeline();
+    tl.from('#e', { opacity: 0, y: 20, duration: 0.4 })
+      .from('#b', { opacity: 0, y: 40, duration: 0.6, ease: 'power3.out' })
+      .to('#k1', { opacity: 1, y: -10, duration: 0.5 }, '+=0.8')
+      .to('#k2', { opacity: 1, y: -10, duration: 0.5 }, '+=1.2')
+      .to('#k3', { opacity: 1, y: -10, duration: 0.5 }, '+=1.2')
+      .to('#s', { opacity: 1, y: -10, duration: 0.6 }, '+=1.2')
+      .to({}, { duration: 6 });
+    return tl;
+  };
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+ "id": "2026-11-30-story-kelime-ustasi",
+ "kind": "story",
+ "yayin": "2026-11-30T10:00:00+03:00",
+ "caption": "",
+ "medya": [
+  "out/story-1.jpg",
+  "out/story-2.jpg",
+  "out/story-3.jpg"
+ ],
+ "muzik": null,
+ "sutun": "uygulama",
+ "uygulama": "Kelime Ustası"
+}

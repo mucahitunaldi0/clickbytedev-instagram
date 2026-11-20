@@ -1,0 +1,17 @@
+{
+ "id": "2026-11-30-carousel-uygulama-vitrini",
+ "kind": "carousel",
+ "yayin": "2026-11-30T12:00:00+03:00",
+ "caption": "Yedi uygulama, hepsi Google Play'de ücretsiz.\n\nFilm keşfinden araç takibine, zihinden işlemden kelime oyununa. Hangisini denediniz?\n\nProfildeki linkten ücretsiz indirin. iOS için yakında App Store'da.\n\n#mobiluygulama #android #flutter",
+ "medya": [
+  "out/slide-1.jpg",
+  "out/slide-2.jpg",
+  "out/slide-3.jpg",
+  "out/slide-4.jpg",
+  "out/slide-5.jpg",
+  "out/slide-6.jpg"
+ ],
+ "muzik": null,
+ "sutun": "uygulama",
+ "uygulama": "genel"
+}
