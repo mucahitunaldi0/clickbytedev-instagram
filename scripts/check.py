@@ -131,7 +131,7 @@ def check(content_dir: str) -> list:
         issues += _text_rules(f.name, _visible_text(f.read_text(encoding="utf-8")))
 
     # dart kod parçaları
-    darts = sorted(d.glob("*.dart"))
+    darts = sorted(p.resolve() for p in d.glob("*.dart"))  # dart analyze cwd=d ile çalışır; göreli yol kırılır
     if any("package:flutter" in f.read_text(encoding="utf-8") for f in darts):
         issues += _flutter_analyze(darts)
     elif darts:
