@@ -12,13 +12,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from check import check  # noqa: E402
 
 
-def png(path: Path, w: int, h: int):
-    def chunk(t, d):
-        return struct.pack(">I", len(d)) + t + d + struct.pack(">I", zlib.crc32(t + d))
-    raw = b"".join(b"\0" + b"\0\0\0" * w for _ in range(1))  # tek satır yeter; yalnızca IHDR okunur
+def img(path: Path, w: int, h: int):
+    from PIL import Image
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
-                     + chunk(b"IDAT", zlib.compress(raw)) + chunk(b"IEND", b""))
+    Image.new("RGB", (w, h)).save(path)
 
 
 def post(tmp_path, caption="Liste kasıyorsa ListView.builder kullanın.", kind="carousel",
@@ -26,10 +23,10 @@ def post(tmp_path, caption="Liste kasıyorsa ListView.builder kullanın.", kind=
     d = tmp_path / "p"
     d.mkdir()
     (d / "slide-1.html").write_text(f"<html><body>{slide}</body></html>", encoding="utf-8")
-    png(d / "out" / "slide-1.png", *size)
+    img(d / "out" / "slide-1.jpg", *size)
     (d / "post.json").write_text(json.dumps({
         "id": "p", "kind": kind, "yayin": "2026-12-01T12:00:00+03:00", "caption": caption,
-        "medya": medya or ["out/slide-1.png"], "muzik": None, "sutun": "ipucu", "uygulama": None,
+        "medya": medya or ["out/slide-1.jpg"], "muzik": None, "sutun": "ipucu", "uygulama": None,
     }), encoding="utf-8")
     return d
 
@@ -77,8 +74,14 @@ def test_wrong_png_size_fails(tmp_path):
     assert any("boyut" in s for s in check(str(post(tmp_path, size=(1080, 1080)))))
 
 
+def test_png_media_rejected(tmp_path):
+    d = post(tmp_path, medya=["out/slide-1.png"])
+    img(d / "out" / "slide-1.png", 1080, 1350)
+    assert any("JPEG" in s for s in check(str(d)))
+
+
 def test_missing_media_fails(tmp_path):
-    assert any("yok" in s for s in check(str(post(tmp_path, medya=["out/slide-9.png"]))))
+    assert any("yok" in s for s in check(str(post(tmp_path, medya=["out/slide-9.jpg"]))))
 
 
 @pytest.mark.skipif(not shutil.which("ffmpeg"), reason="ffmpeg yok")

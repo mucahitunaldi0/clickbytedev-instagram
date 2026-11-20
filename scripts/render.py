@@ -1,7 +1,7 @@
 """HTML -> PNG / MP4.
 
-carousel/image: slide-*.html -> out/slide-*.png (1080x1350)
-story:          story-*.html -> out/story-*.png (1080x1920)
+carousel/image: slide-*.html -> out/slide-*.jpg (1080x1350)
+story:          story-*.html -> out/story-*.jpg (1080x1920)
 reel:           reel.html    -> out/reel.mp4  (1080x1920, 30 fps, H.264 + AAC)
 
 Reel sayfası sözleşmesi: window.REEL_SURE_MS (sayı) ve window.oynat() GSAP zaman çizelgesini kurup DÖNDÜRÜR.
@@ -87,8 +87,8 @@ def render(content_dir: str) -> list:
                 (d / "out").mkdir(exist_ok=True)
                 for html in sorted(d.glob(f"{prefix}-*.html"), key=_num):
                     page = _open(browser, w, h, html)
-                    target = d / "out" / f"{html.stem}.png"
-                    page.screenshot(path=str(target))
+                    target = d / "out" / f"{html.stem}.jpg"  # Instagram API yalnızca JPEG kabul eder
+                    page.screenshot(path=str(target), type="jpeg", quality=95)
                     page.close()
                     out.append(str(target))
         finally:

@@ -8,7 +8,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 SUDO=""; command -v sudo >/dev/null && [ "$(id -u)" != 0 ] && SUDO="sudo"
 
-if ! python -c "import playwright, pytest" 2>/dev/null; then
+if ! python -c "import playwright, pytest, PIL" 2>/dev/null; then
   pip install -q -r requirements.txt || pip install -q --break-system-packages -r requirements.txt
 fi
 if ! ls ~/.cache/ms-playwright/chromium* >/dev/null 2>&1; then

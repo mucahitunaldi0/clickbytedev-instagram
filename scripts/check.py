@@ -51,11 +51,13 @@ def _text_rules(label: str, text: str) -> list:
     return out
 
 
-def _png_size(p: Path):
-    b = p.read_bytes()[:24]
-    if b[:8] != b"\x89PNG\r\n\x1a\n":
+def _img_size(p: Path):
+    from PIL import Image
+    try:
+        with Image.open(p) as im:
+            return im.size
+    except OSError:
         return None
-    return struct.unpack(">II", b[16:24])
 
 
 def _probe(p: Path) -> dict:
@@ -150,8 +152,10 @@ def check(content_dir: str) -> list:
             issues.append(f"medya yok: {m}")
             continue
         if p.suffix.lower() == ".png":
-            if _png_size(p) != want:
-                issues.append(f"{m}: boyut {_png_size(p)} ≠ {want}")
+            issues.append(f"{m}: Instagram API yalnızca JPEG görsel kabul eder (.jpg kullanın)")
+        elif p.suffix.lower() in (".jpg", ".jpeg"):
+            if _img_size(p) != want:
+                issues.append(f"{m}: boyut {_img_size(p)} ≠ {want}")
         elif p.suffix.lower() == ".mp4":
             info = _probe(p)
             v = [s for s in info.get("streams", []) if s.get("codec_type") == "video"]

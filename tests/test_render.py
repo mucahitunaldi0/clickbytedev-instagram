@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from check import _png_size  # noqa: E402
+from check import _img_size  # noqa: E402
 from render import render  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,18 +23,18 @@ SLIDE = '<!doctype html><html><head><link rel="stylesheet" href="{css}"></head><
 CSS = (ROOT / "sablon" / "brand.css").as_uri()
 
 
-def test_render_carousel_pngs(tmp_path):
+def test_render_carousel_jpgs(tmp_path):
     d = mk(tmp_path, "carousel", {f"slide-{i}.html": SLIDE.format(css=CSS, t=f"Slayt {i}") for i in (1, 2)})
     out = render(str(d))
-    assert [Path(p).name for p in out] == ["slide-1.png", "slide-2.png"]
-    assert all(_png_size(Path(p)) == (1080, 1350) for p in out)
+    assert [Path(p).name for p in out] == ["slide-1.jpg", "slide-2.jpg"]
+    assert all(_img_size(Path(p)) == (1080, 1350) for p in out)
 
 
 def test_render_story_size(tmp_path):
     d = mk(tmp_path, "story", {"story-1.html": SLIDE.format(css=CSS, t="Story")})
     out = render(str(d))
-    assert [Path(p).name for p in out] == ["story-1.png"]
-    assert _png_size(Path(out[0])) == (1080, 1920)
+    assert [Path(p).name for p in out] == ["story-1.jpg"]
+    assert _img_size(Path(out[0])) == (1080, 1920)
 
 
 REEL = """<!doctype html><html><head><link rel="stylesheet" href="{css}">
