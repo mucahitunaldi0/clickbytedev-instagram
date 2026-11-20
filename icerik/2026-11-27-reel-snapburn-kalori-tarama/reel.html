@@ -5,17 +5,22 @@
 <link rel="stylesheet" href="../../sablon/brand.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <style>
-  .zemin { padding: 260px 84px 300px; justify-content: center; }
-  .imlec { display: inline-block; width: 16px; height: 34px; background: var(--mavi); vertical-align: middle; }
+  .zemin { padding: 220px 84px 260px; }
+  .sahne { position: relative; height: 820px; display: flex; justify-content: center; }
+  .sahne img { position: absolute; top: 0; height: 820px; opacity: 0; }
+  .baslik { font-size: 92px; }
 </style>
 </head>
 <body>
 <div class="zemin">
-  <div class="etiket" id="e">// snapburn · nasıl çalışır</div>
-  <h1 class="baslik" id="b">Kalori için <em>3 dokunuş</em></h1>
-  <div class="kart one-cikan govde" id="k1" style="opacity:0">1. Kamerayı açın</div>
-  <div class="kart one-cikan govde" id="k2" style="opacity:0">2. Tabağı çekin</div>
-  <div class="kart one-cikan govde" id="k3" style="opacity:0">3. Sonucu görün</div>
+  <div class="uygulama-ad" id="e"><img class="ikon" src="../../assets/uygulamalar/snapburn/ikon.png" alt="">Snapburn</div>
+  <h1 class="baslik" id="b">Bir günün tamamı <em>tek ekranda</em></h1>
+  <div class="sahne">
+    <img class="magaza" id="m1" src="../../assets/uygulamalar/snapburn/magaza-1.jpg" alt="">
+    <img class="magaza" id="m2" src="../../assets/uygulamalar/snapburn/magaza-2.jpg" alt="">
+    <img class="magaza" id="m3" src="../../assets/uygulamalar/snapburn/magaza-3.jpg" alt="">
+    <img class="magaza" id="m4" src="../../assets/uygulamalar/snapburn/magaza-4.jpg" alt="">
+  </div>
   <h2 class="altbaslik" id="s" style="opacity:0">Google Play'de <em style="font-style:normal;color:var(--mavi)">ücretsiz</em>. Profildeki linkten.</h2>
   <div class="alt"><span class="logo">click<b>byte</b>dev</span><span>clickbytedev.com</span></div>
 </div>
@@ -25,11 +30,13 @@
     const tl = gsap.timeline();
     tl.from('#e', { opacity: 0, y: 20, duration: 0.4 })
       .from('#b', { opacity: 0, y: 40, duration: 0.6, ease: 'power3.out' })
-      .to('#k1', { opacity: 1, y: -10, duration: 0.5 }, '+=0.8')
-      .to('#k2', { opacity: 1, y: -10, duration: 0.5 }, '+=1.2')
-      .to('#k3', { opacity: 1, y: -10, duration: 0.5 }, '+=1.2')
-      .to('#s', { opacity: 1, y: -10, duration: 0.6 }, '+=1.2')
-      .to({}, { duration: 6 });
+      .fromTo('#m1', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 });
+    ['#m2', '#m3', '#m4'].forEach((m, i) => {
+      tl.to(`#m${i + 1}`, { opacity: 0, duration: 0.4 }, '+=2')
+        .fromTo(m, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, '<');
+    });
+    tl.to('#s', { opacity: 1, y: -10, duration: 0.6 }, '+=0.6')
+      .to({}, { duration: 3 });
     return tl;
   };
 </script>

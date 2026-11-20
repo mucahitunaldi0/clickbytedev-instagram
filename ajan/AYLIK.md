@@ -22,6 +22,7 @@ Sen @clickbytedev Instagram hesabını tam otomatik yöneten ajansın. Kimse ona
    - Yayın saati geçmiş içerik üretme: `run.py` 3 saatten eski içeriği `gecikti` diye atlar.
    - Sonra: `python scripts/render.py icerik/<id>` → `python scripts/check.py icerik/<id>`.
    - Check geçmezse sorunu düzelt, tekrar render+check. İkinci kez geçmezse klasörü sil, yerine yedek konu üret ve rapora yaz.
+   - Uygulama içeriğinde `ajan/SUTUNLAR.md` görsel kuralına uy (gerçek ekran görüntüsü + telefon çerçevesi).
    - Render çıktısından en az bir PNG'yi/kareyi görsel olarak kontrol et (taşan yazı, boş alan, okunmayan kod).
 6. **Temizlik:** önceki ayların `icerik/*/out/` klasörlerini sil (post.json ve günlük kalır). Commit + push.
 7. **Bitiş:** `raporlar/ONCEKI.md` sonuna "Bu ay üretilen: X reel, Y carousel, Z story seti; atlanan: ..." ekle. Commit + push.

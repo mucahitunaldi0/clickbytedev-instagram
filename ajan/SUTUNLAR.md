@@ -23,5 +23,11 @@ Hook için `ig-reel` skill'indeki formüller; carousel kapağı için `ig-carous
 | CepİK | cepik | İzin, köprü tatili, maaş, kıdem hesaplayıcıları |
 | Kelime Ustası | kelime-ustasi | Türkçe-İngilizce kelime oyunu |
 
+**Görsel kuralı:** uygulama içeriğinin her karesinde gerçek görsel olur; yalnız yazı kartı yok. Varlıklar `assets/uygulamalar/<slug>/`:
+- `ikon.png` (hepsinde), `ekran-N.jpg` = ham ekran görüntüsü (otonot, cepik, movyra, matematik-heyecani) → `<div class="telefon"><img src="../../assets/uygulamalar/<slug>/ekran-N.jpg"></div>`
+- `magaza-N.jpg` = içinde telefon olan hazır mağaza görseli (snapburn, kelime-ustasi, pixelpop) → `<img class="magaza" src="...">` (telefon çerçevesine koyma)
+- Sınıflar `sablon/brand.css`: `.telefon`/`.magaza` (560px; story'de `buyuk` ile 900px), `.telefonlar` (yan yana), `.uygulama-ad` (ikon + ad), `.ikon`, `.ikon.buyuk-ikon`, `.ikonlar`. Örnek: `icerik/2026-11-30-carousel-uygulama-vitrini`, `icerik/2026-11-24-story-otonot-hatirlatici`.
+- Yazı görselin anlattığıyla tutarlı olmalı; ekranda olmayan özelliği o ekranla anlatma. Yeni ekran gerekiyorsa uydurma, raporda iste.
+
 Android uygulamaları Google Play'de ücretsiz; iOS "yakında App Store'da".
 Bir ayda her uygulama en fazla 2 kez öne çıkar; yeni güncellemesi olan (bilgi bankasında notu olan) önceliklidir.
