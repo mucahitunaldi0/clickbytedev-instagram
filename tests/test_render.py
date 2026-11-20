@@ -64,3 +64,18 @@ def test_render_fails_without_brand_fonts(tmp_path):
     d = mk(tmp_path, "story", {"story-1.html": "<html><body><h1>fontsuz</h1></body></html>"})
     with pytest.raises(RuntimeError, match="font"):
         render(str(d))
+
+
+def test_render_fails_on_overflowing_text(tmp_path):
+    import pytest
+    d = mk(tmp_path, "carousel", {"slide-1.html": SLIDE.format(css=CSS, t="Taşan" + "x" * 80)})
+    with pytest.raises(RuntimeError, match="taşıyor"):
+        render(str(d))
+
+
+def test_render_fails_on_clipped_code(tmp_path):
+    import pytest
+    kod = '<pre class="kod">' + "a" * 90 + "</pre>"
+    d = mk(tmp_path, "carousel", {"slide-1.html": SLIDE.format(css=CSS, t="Kod").replace("</h1>", "</h1>" + kod)})
+    with pytest.raises(RuntimeError, match="taşıyor"):
+        render(str(d))

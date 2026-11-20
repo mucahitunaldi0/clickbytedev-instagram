@@ -63,7 +63,7 @@ def _img_size(p: Path):
 def _probe(p: Path) -> dict:
     r = subprocess.run(["ffprobe", "-v", "error", "-show_entries",
                         "stream=codec_type,codec_name,width,height:format=duration", "-of", "json", str(p)],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     return json.loads(r.stdout or "{}")
 
 
@@ -95,9 +95,9 @@ def _flutter_analyze(darts: list) -> list:
         (Path(tmp) / "lib").mkdir()
         for f in darts:
             shutil.copy(f, Path(tmp) / "lib" / f.name)
-        r = subprocess.run([flutter, "pub", "get"], capture_output=True, text=True, cwd=tmp)
+        r = subprocess.run([flutter, "pub", "get"], capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=tmp)
         if r.returncode == 0:
-            r = subprocess.run([flutter, "analyze", "--no-pub", "lib"], capture_output=True, text=True, cwd=tmp)
+            r = subprocess.run([flutter, "analyze", "--no-pub", "lib"], capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=tmp)
         if r.returncode != 0:
             return ["flutter analyze hatası: " + (r.stdout + r.stderr).strip()[-400:]]
     return []
@@ -140,7 +140,7 @@ def check(content_dir: str) -> list:
             issues.append("dart bulunamadı; kod kontrol edilemedi")
         else:
             r = subprocess.run([dart, "analyze", "--fatal-infos", *map(str, darts)],
-                               capture_output=True, text=True, cwd=d)
+                               capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=d)
             if r.returncode != 0:
                 issues.append("dart analyze hatası: " + (r.stdout + r.stderr).strip()[-400:])
 

@@ -39,6 +39,20 @@ def _open(browser, w, h, html: Path):
     return page
 
 
+OVERFLOW_JS = """() => [...document.querySelectorAll('body *')].filter(e => {
+  const r = e.getBoundingClientRect();
+  return r.width && (r.right > innerWidth + 1 || r.bottom > innerHeight + 1 || r.left < -1
+    || e.scrollWidth > e.clientWidth + 2
+    || (e.matches('.kod') && e.scrollHeight > e.clientHeight + 2));
+}).map(e => e.className || e.tagName).slice(0, 3)"""
+
+
+def _check_overflow(page, html: Path):
+    bad = page.evaluate(OVERFLOW_JS)
+    if bad:
+        raise RuntimeError(f"{html.name}: içerik kadrajdan taşıyor ({', '.join(map(str, bad))}); yazıyı kısaltın ya da küçültün")
+
+
 def _render_reel(browser, d: Path, post: dict) -> str:
     w, h = SIZES["reel"]
     page = _open(browser, w, h, d / "reel.html")
@@ -87,6 +101,7 @@ def render(content_dir: str) -> list:
                 (d / "out").mkdir(exist_ok=True)
                 for html in sorted(d.glob(f"{prefix}-*.html"), key=_num):
                     page = _open(browser, w, h, html)
+                    _check_overflow(page, html)
                     target = d / "out" / f"{html.stem}.jpg"  # Instagram API yalnızca JPEG kabul eder
                     page.screenshot(path=str(target), type="jpeg", quality=95)
                     page.close()
