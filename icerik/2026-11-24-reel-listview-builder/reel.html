@@ -19,7 +19,7 @@
 </div>
 <script>
   window.REEL_SURE_MS = 15000;
-  const satirlar = "Widget liste(List<String> urunler) {\n  return ListView.builder(\n    itemCount: urunler.length,\n    itemBuilder: (context, i) {\n      return ListTile(title: Text(urunler[i]));\n    },\n  );\n}";
+  const satirlar = "Widget liste(List<String> urunler) {\n  return ListView.builder(\n    itemCount: urunler.length,\n    itemBuilder: (context, i) {\n      return Text(urunler[i]);\n    },\n  );\n}";
   window.oynat = () => {
     const kod = document.getElementById('kod');
     const tl = gsap.timeline();
@@ -27,7 +27,7 @@
       .from('#b', { opacity: 0, y: 40, duration: 0.6, ease: 'power3.out' })
       .to({ n: 0 }, {
         n: satirlar.length, duration: 4, ease: 'none',
-        onUpdate() { kod.innerHTML = satirlar.slice(0, Math.round(this.targets()[0].n)) + '<span class="imlec"></span>'; }
+        onUpdate() { kod.textContent = satirlar.slice(0, Math.round(this.targets()[0].n)); const im = document.createElement('span'); im.className = 'imlec'; kod.appendChild(im); }
       }, '+=0.3')
       .to('#s', { opacity: 1, y: -10, duration: 0.6 }, '+=0.4')
       .to({}, { duration: 8.7 });

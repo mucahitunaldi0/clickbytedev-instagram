@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class Satir extends StatelessWidget {
   const Satir({super.key});
@@ -6,7 +6,9 @@ class Satir extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Row(children: [
-      Expanded(child: Text('Uzun bir film adı')),
+      Expanded(
+        child: Text('Uzun film adı'),
+      ),
     ]);
   }
 }
