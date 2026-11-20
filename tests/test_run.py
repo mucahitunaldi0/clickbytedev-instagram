@@ -149,3 +149,14 @@ def test_story_partial_failure_keeps_published_ids(tmp_path, monkeypatch):
     _fakes(monkeypatch, publish=pub)
     run.publish_due(NOW, "https://b", root=tmp_path)
     assert log(tmp_path)[-1]["durum"] == "hata" and log(tmp_path)[-1]["media_id"] == "m1"
+
+
+def test_publish_due_follows_yayin_order_not_folder_name(tmp_path, monkeypatch):
+    mk(tmp_path, "a-ilk-klasor", "2026-12-01T14:02:00+03:00", kind="image", medya=("out/g.jpg",))
+    mk(tmp_path, "z-son-klasor", "2026-12-01T14:01:00+03:00", kind="image", medya=("out/g.jpg",))
+    order = []
+    monkeypatch.setattr(run, "check", lambda d: [])
+    monkeypatch.setattr(run.ig, "wait_for_url", lambda u, timeout_s=600: None)
+    monkeypatch.setattr(run.ig, "publish", lambda k, urls, cap="": order.append(urls[0]) or "m")
+    run.publish_due(NOW, "https://b", root=tmp_path)
+    assert [u.split("/")[-3] for u in order] == ["z-son-klasor", "a-ilk-klasor"]

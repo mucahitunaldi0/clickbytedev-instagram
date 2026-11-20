@@ -105,11 +105,10 @@ def _publish_one(d: Path, post: dict, now: datetime, pages_base: str, root: Path
 
 
 def publish_due(now: datetime, pages_base: str, root: Path = ROOT) -> list:
-    ids = set(due(now, root))
+    posts = {post["id"]: (d, post) for d, post in _posts(root)}
     results = []
-    for d, post in _posts(root):
-        if post["id"] not in ids:
-            continue
+    for id_ in due(now, root):  # yayın saatine göre: grid sırası buna bağlı
+        d, post = posts[id_]
         entry = _publish_one(d, post, now, pages_base, root)
         if entry["durum"] not in ("bekliyor", "kilit-yok"):
             _log(root, entry)
