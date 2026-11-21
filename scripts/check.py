@@ -2,13 +2,9 @@
 
 CLI: python scripts/check.py <icerik_klasoru>   (çıkış kodu 0/1)
 """
-import html
 import json
 import re
-import shutil
-import struct
 import subprocess
-import tempfile
 import sys
 from pathlib import Path
 
@@ -26,13 +22,9 @@ SECRET_PATTERNS = [
 BANNED = [r"\ben iyi\b", r"mükemmel", r"devrim", r"kullanıcı dostu", r"\bapp\b(?! store)"]
 BRAND_WRONG = [r"\bClickbytedev\b", r"Click Byte Dev", r"\bCBD\b", r"\bClickByteDev\.com\b"]
 EMOJI = re.compile("[\U0001F300-\U0001FAFF☀-➿\U0001F000-\U0001F2FF]")
-TEXT_EXT = {".html", ".md", ".json", ".dart", ".txt", ".css", ".js"}
-SIZES = {"carousel": (1080, 1350), "image": (1080, 1350), "story": (1080, 1920), "reel": (1080, 1920)}
-
-
-def _visible_text(src: str) -> str:
-    src = re.sub(r"(?is)<(script|style|pre)\b.*?</\1>", " ", src)
-    return html.unescape(re.sub(r"<[^>]+>", " ", src))
+TEXT_EXT = {".md", ".json", ".txt"}
+# Instagram API en/boy oranı aralıkları (görseller kullanıcıdan gelir; boyut serbest)
+ORAN = {"carousel": (0.8, 1.91), "image": (0.8, 1.91), "story": (0.5, 0.6), "reel": (0.5, 0.6)}
 
 
 def _text_rules(label: str, text: str) -> list:
@@ -67,42 +59,6 @@ def _probe(p: Path) -> dict:
     return json.loads(r.stdout or "{}")
 
 
-def _tool(name: str):
-    """PATH'te ya da setup-cloud.sh'in kurduğu ~/flutter/bin altında."""
-    found = shutil.which(name)
-    if found:
-        return found
-    p = Path.home() / "flutter" / "bin" / name
-    return str(p) if p.exists() else None
-
-
-PUBSPEC = """name: kontrol
-environment:
-  sdk: ^3.0.0
-dependencies:
-  flutter:
-    sdk: flutter
-"""
-
-
-def _flutter_analyze(darts: list) -> list:
-    """Flutter kodu geçici bir Flutter projesinde analiz edilir."""
-    flutter = _tool("flutter")
-    if not flutter:
-        return ["flutter bulunamadı; Flutter kodu kontrol edilemedi"]
-    with tempfile.TemporaryDirectory() as tmp:
-        (Path(tmp) / "pubspec.yaml").write_text(PUBSPEC, encoding="utf-8")
-        (Path(tmp) / "lib").mkdir()
-        for f in darts:
-            shutil.copy(f, Path(tmp) / "lib" / f.name)
-        r = subprocess.run([flutter, "pub", "get"], capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=tmp)
-        if r.returncode == 0:
-            r = subprocess.run([flutter, "analyze", "--no-pub", "lib"], capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=tmp)
-        if r.returncode != 0:
-            return ["flutter analyze hatası: " + (r.stdout + r.stderr).strip()[-400:]]
-    return []
-
-
 def check(content_dir: str) -> list:
     d = Path(content_dir)
     issues = []
@@ -111,10 +67,10 @@ def check(content_dir: str) -> list:
     except (OSError, ValueError) as e:
         return [f"post.json okunamadı: {e}"]
     kind = post.get("kind")
-    if kind not in SIZES:
+    if kind not in ORAN:
         issues.append(f"bilinmeyen kind: {kind}")
 
-    # gizli bilgi: render edilen her metin kaynağı
+    # gizli bilgi: klasördeki metin dosyaları
     for f in sorted(d.rglob("*")):
         if f.is_file() and f.suffix.lower() in TEXT_EXT:
             src = f.read_text(encoding="utf-8", errors="replace")
@@ -123,29 +79,14 @@ def check(content_dir: str) -> list:
                     issues.append(f"{f.name}: gizli bilgi şüphesi /{p[:30]}/")
                     break
 
-    # metin kuralları: caption + slaytların görünür metni (kod blokları hariç)
+    # metin kuralları
     issues += _text_rules("caption", post.get("caption", ""))
     if len(post.get("caption", "")) > 2200:
         issues.append("caption: 2200 karakteri aşıyor")
-    for f in sorted(d.glob("*.html")):
-        issues += _text_rules(f.name, _visible_text(f.read_text(encoding="utf-8")))
-
-    # dart kod parçaları
-    darts = sorted(p.resolve() for p in d.glob("*.dart"))  # dart analyze cwd=d ile çalışır; göreli yol kırılır
-    if any("package:flutter" in f.read_text(encoding="utf-8") for f in darts):
-        issues += _flutter_analyze(darts)
-    elif darts:
-        dart = _tool("dart")
-        if not dart:
-            issues.append("dart bulunamadı; kod kontrol edilemedi")
-        else:
-            r = subprocess.run([dart, "analyze", "--fatal-infos", *map(str, darts)],
-                               capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=d)
-            if r.returncode != 0:
-                issues.append("dart analyze hatası: " + (r.stdout + r.stderr).strip()[-400:])
 
     # medya
-    want = SIZES.get(kind)
+    lo, hi = ORAN.get(kind, (0, 99))
+    oran_ok = lambda w, h: w >= 320 and lo <= w / h <= hi  # noqa: E731
     for m in post.get("medya", []):
         p = d / m
         if not p.exists():
@@ -154,21 +95,19 @@ def check(content_dir: str) -> list:
         if p.suffix.lower() == ".png":
             issues.append(f"{m}: Instagram API yalnızca JPEG görsel kabul eder (.jpg kullanın)")
         elif p.suffix.lower() in (".jpg", ".jpeg"):
-            if _img_size(p) != want:
-                issues.append(f"{m}: boyut {_img_size(p)} ≠ {want}")
+            size = _img_size(p)
+            if not size or not oran_ok(*size):
+                issues.append(f"{m}: boyut {size} uygun değil (en/boy {lo}-{hi}, genişlik ≥320)")
         elif p.suffix.lower() == ".mp4":
             info = _probe(p)
             v = [s for s in info.get("streams", []) if s.get("codec_type") == "video"]
-            a = [s for s in info.get("streams", []) if s.get("codec_type") == "audio"]
             dur = float(info.get("format", {}).get("duration", 0))
-            if not v or (v[0].get("width"), v[0].get("height")) != want or v[0].get("codec_name") != "h264":
-                issues.append(f"{m}: video boyut/codec hatalı")
-            if kind == "reel" and not (15 <= dur <= 45):
-                issues.append(f"{m}: süre {dur:.1f} sn (15-45 olmalı)")
+            if not v or not oran_ok(v[0].get("width", 0), v[0].get("height", 1)) or v[0].get("codec_name") not in ("h264", "hevc"):
+                issues.append(f"{m}: video boyut/codec hatalı (9:16, H.264/HEVC)")
+            if kind == "reel" and not (3 <= dur <= 900):
+                issues.append(f"{m}: süre {dur:.1f} sn (3 sn - 15 dk olmalı)")
             if kind == "story" and dur > 60:
                 issues.append(f"{m}: süre {dur:.1f} sn (story en fazla 60)")
-            if kind == "reel" and (not a or a[0].get("codec_name") != "aac"):
-                issues.append(f"{m}: aac ses yok")
         else:
             issues.append(f"{m}: desteklenmeyen dosya türü")
     if not post.get("medya"):

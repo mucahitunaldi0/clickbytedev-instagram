@@ -1,6 +1,6 @@
 # Marka kuralları (kaynak: clickbytedev.com/kurumsal/kurumsalkimlik)
 
-Her görsel `sablon/brand.css` kullanır. İçerik klasöründen yol: `../../sablon/brand.css`.
+Görselleri hesap sahibi hazırlar; aşağıdaki görsel kuralları onun içindir, ajan caption ve planlamada uyar.
 
 ## Görsel
 - Zemin Gece `#07090D` (alanın ~%70'i), kart `#0D1118` (~%15), vurgu Byte mavisi `#3D7BFF` (~%10).
